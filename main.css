@@ -1,0 +1,28 @@
+body {
+    width: 800px;
+    margin: 25px auto;
+    font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  }
+  path {
+    stroke: #999;
+  }
+  path:hover {
+    stroke: black;
+  }
+
+  circle {
+    fill-opacity: 0.3;
+  }
+
+  circle:hover {
+    fill-opacity: 1;
+  }
+
+  main {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  h3 {
+    text-align: center;
+  }
