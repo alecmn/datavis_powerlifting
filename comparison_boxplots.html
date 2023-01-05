@@ -1,0 +1,418 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body>
+
+    <div id="stats" style="border: 1px solid rgb(194,194,194); max-width: 540px;">
+        
+        <div id="stats-header" style="height:30px">
+            <div id="header" style="background-color: rgb(194,194,194); font-size: 20px;"><strong>Your stats vs other lifters</strong></div>
+            <br>
+        </div>
+        
+        <div>
+            <label for="division" ><strong>Weight class(kg):</strong></label>
+            <select id="division" class="dropdown">
+            
+            </select>
+            <label for="sex"><strong>Sex:</strong></label>
+            <select id="sex" class="dropdown">
+            </select>
+            <label for="equipment"><strong>Equipment:</strong></label>
+            <select id="equipment" class="dropdown">
+            </select>
+        </div>
+        <br>
+        
+        
+        <div class="outer">
+            <table cellspacing="0">
+                <tr>
+                    <th></th>
+                    <th>Enter your PRs</th>
+                </tr>
+                <tr>
+                <td>
+                    <svg id="bench-svg" ></svg>
+                </td>
+                <td>
+                    <input class="entries" type="number" id="bench-entry" value="" style="width: 100px;">
+                </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg id="squat-svg" ></svg>
+                    </td>
+                    <td>
+                        <input class="entries" type="number" id="squat-entry" value="" style="width: 100px;">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg id="deadlift-svg" ></svg>
+                    </td>
+                    <td>
+                        <input class="entries" type="number" id="deadlift-entry" value="" style="width: 100px;">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg id="total-svg" ></svg>
+                    </td>
+                    <td>
+                        <input class="entries" type="number" id="total-entry" value="" style="width: 100px;">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg id="wilks-svg" ></svg>
+                    </td>
+                    <td>
+                        <input class="entries" type="number" id="wilks-entry" value="" style="width: 100px;">
+                    </td>
+                </tr>
+            </table>
+
+            
+        
+        </div>
+
+
+    </div>
+    <svg id="svg2" width="900" height="500"></svg>
+    <script>
+
+        const w = 400;
+        const plotlen=230;
+        const h = 50;
+        const offset=120;
+        const weightClassOptions=[{value:"all", text:"All Classes"},  
+                { value:"-44",text:"Under 44"},
+                { value:"-48",text:"Under 48"},
+                { value:"-52",text:"Under 52"},
+                { value:"-56",text:"Under 56"},
+                { value:"-60",text:"Under 60"},
+                { value:"-67.5",text:"Under 67.5"},
+                { value:"-75",text:"Under 75"},
+                { value:"-82.5",text:"Under 82.5"},
+                { value:"-90",text:"Under 90"},
+                { value:"-100",text:"Under 100"},
+                { value:"-110",text:"Under 110"},
+                { value:"-125",text:"Under 125"},
+                { value:"-140",text:"Under 140"},
+                { value:"140+",text:"Over 140"}];
+        // Initialize weight class dropdown
+        var weightClassSelector=d3.select("#division")
+        weightClassSelector.selectAll(".options")
+        .data(weightClassOptions)
+        .enter()
+        .append("option")
+        .attr("class","options")
+        .attr("value",function(d){return d.value;})
+        .text(function(d){return d.text;});
+
+
+        const sexOptions=[{value:"all",text:"All"},
+        {value:"M",text:"Male"},
+        {value:"F",text:"Female"},
+        {value:"Mx",text:"Undisclosed"}]
+        // Initialize sex dropdown
+        var sexSelector=d3.select("#sex")
+        sexSelector.selectAll(".options")
+        .data(sexOptions)
+        .enter()
+        .append("option")
+        .attr("class","options")
+        .attr("value",function(d){return d.value;})
+        .text(function(d){return d.text;});
+
+        const equipmentOptions=[{value:"all",text:"Raw+Wraps"},
+        {value:"Raw",text:"Raw"},
+        {value:"Wraps",text:"Wraps"}];
+        // Initialize equipment dropdown
+        var equipmentSelector=d3.select("#equipment")
+        equipmentSelector.selectAll(".options")
+        .data(equipmentOptions)
+        .enter()
+        .append("option")
+        .attr("class","options")
+        .attr("value",function(d){return d.value;})
+        .text(function(d){return d.text;});
+        
+        // Helper function to get key
+        function getKey(type){
+            if(type==="bench")
+                return "Best3BenchKg";
+            else if(type==="squat")
+                return "Best3SquatKg";
+            else if(type==="deadlift")
+                return "Best3DeadliftKg";
+            else if(type==="total")
+                return "TotalKg";
+            else
+                return "Wilks"
+        }
+        
+        function drawBox(svgID,data_source,label){
+            var svg=d3.select(svgID)
+            .attr("width",w)
+            .attr("height",h)
+            .append("g");
+            
+            d3.csv(data_source, function(data){
+                //console.log(data);
+                
+                stat=svgID.slice(1,svgID.length-4)
+                key=getKey(stat)
+                
+                let values=data
+                
+                values=values.map(function(d){return +d[key];});    
+                //console.log(values)
+                var sorted=values.sort(d3.ascending);
+                var statScale=d3.scaleLinear().domain([sorted[0],sorted[sorted.length-1]]).range([offset,offset+plotlen]);
+                var q1=d3.quantile(sorted,0.25);
+                var med=d3.quantile(sorted,0.50);
+                var q3=d3.quantile(sorted,0.75);
+                var min=sorted[0];
+                var max=sorted[sorted.length-1];
+
+                var center=30;
+                var width=30;
+
+                // Central line
+                svg.append("line")
+                .attr("x1",offset)
+                .attr("x2",plotlen+offset)
+                .attr("y1",center)
+                .attr("y2",center)
+                .attr("stroke","black");
+
+                // Whiskers
+                svg.append("line")
+                .attr("x1",offset)
+                .attr("x2",offset)
+                .attr("y1",center+10)
+                .attr("y2",center-10)
+                .attr("stroke","black");
+                svg.append("line")
+                .attr("x1",plotlen+offset)
+                .attr("x2",plotlen+offset)
+                .attr("y1",center+10)
+                .attr("y2",center-10)
+                .attr("stroke","black");
+
+                // Label 
+                svg.append('text')
+                .classed("plotStat",true)
+                .attr("x",0)
+                .attr("y",center+5)
+                .text(label)
+                
+                // Box
+                svg.append("rect")
+                .classed("bPlot",true)
+                .attr("x",statScale(q1))
+                .attr("y",center-width/2)
+                .attr("height",width)
+                .attr("width",statScale(q3)-statScale(q1))
+                .attr("stroke","black")
+                .attr("fill","steelblue")
+                .attr("fill-opacity",1);
+
+                // median line
+                svg.append("line")
+                .classed("medianLine",true)
+                .attr("x1",statScale(med))
+                .attr("x2",statScale(med))
+                .attr("y1", center+width/2)
+                .attr("y2",center-width/2)
+                .attr("stroke","black");
+
+                // Min and max text
+                svg.append('text')
+                .classed("minText",true)
+                .attr("x",offset-20)
+                .attr("y",center+5)
+                .text(Math.round(min));
+                svg.append('text')
+                .classed("maxText",true)
+                .attr("x",plotlen+offset+5)
+                .attr("y",center+5)
+                .text(max);
+
+                
+                
+                svg.append("circle")
+                    .attr("id",stat+"-value")
+                    .attr("cx", statScale(1))
+                    .attr("cy", center)
+                    .attr("r", 0)
+                    .attr("fill", "orange");
+                
+            })
+        }
+        drawBox("#bench-svg","powerlifting_benchData.csv","Bench(Kg)")
+        drawBox("#squat-svg","powerlifting_squatData.csv","Squat(Kg)")
+        drawBox("#deadlift-svg","powerlifting_deadliftData.csv","Deadlift(Kg)")
+        drawBox("#total-svg","powerlifting_totalData.csv","Total(Kg)")
+        drawBox("#wilks-svg","powerlifting_wilksData.csv","Wilks")
+
+        const boxFilters={
+            division:"all",
+            sex:"all",
+            equipment:"all"
+        }
+        // Initialize user entries
+        const entries={
+            bench:-1,
+            squat:-1,
+            deadlift:-1,
+            total:-1,
+            wilks:-1
+        }
+        
+        // Update boxplot after filtering
+        function updateBox(svgID,data_source){
+            var svg=d3.select(svgID)
+            
+            d3.csv(data_source, function(data){
+                
+                let values=data
+                stat=svgID.slice(1,svgID.length-4)
+                key=getKey(stat)
+                if(boxFilters.division!=="all"){
+                    values=values
+                    .filter(function(d){return d['division']===boxFilters.division;});
+                }
+                if(boxFilters.sex!=="all"){
+                    values=values.filter(function(d){return d['Sex']===boxFilters.sex;});
+                }
+                if(boxFilters.equipment!=="all"){
+                    values=values.filter(function(d){return d['Equipment']===boxFilters.equipment;})
+                }
+
+                
+                values=values.map(function(d){
+                        return +d[key];
+                });
+
+                //console.log(values)
+                var sorted=values.sort(d3.ascending);
+                var statScale=d3.scaleLinear().domain([sorted[0],sorted[sorted.length-1]]).range([offset,plotlen+offset]);
+                var q1=d3.quantile(sorted,0.25);
+                var med=d3.quantile(sorted,0.50);
+                var q3=d3.quantile(sorted,0.75);
+                var min=sorted[0];
+                var max=sorted[sorted.length-1];
+
+                var center=30;
+                var width=30;
+
+                //Update box
+                svg.selectAll(".bPlot")
+                .transition()
+                .duration(500)
+                .attr("x",statScale(q1))
+                .attr("y",center-width/2)
+                .attr("height",width)
+                .attr("width",statScale(q3)-statScale(q1))
+                .attr("stroke","black")
+
+                
+                // Update median line
+                svg.selectAll(".medianLine")
+                .transition()
+                .duration(500)
+                .attr("x1",statScale(med))
+                .attr("x2",statScale(med))
+                .attr("y1", center+width/2)
+                .attr("y2",center-width/2)
+                .attr("stroke","black");
+
+                // Update Min and max text
+                svg.selectAll('.minText')
+                .attr("x",offset-20)
+                .attr("y",center+5)
+                .text(Math.round(min));
+                svg.selectAll('.maxText')
+                .attr("x",plotlen+offset+5)
+                .attr("y",center+5)
+                .text(max);
+
+                
+                entry=entries[stat]
+                
+                
+                if(entry>0){
+                    var color="orange";
+                    if(entry<min)
+                        color="red";
+                    else if(entry>max)
+                        color="green";
+                    svg.select(svgID.slice(0,svgID.length-4)+"-value")
+                    .transition()
+                    .duration(500)
+                    .attr("cx", statScale(Math.max(min,Math.min(entry,max))))
+                    .attr("cy", center)
+                    .attr("r", 5)
+                    .attr("fill", color);
+                }
+                
+                
+            })
+        }
+
+        //define wait function
+        var wait = ms => new Promise((r, j)=>setTimeout(r, ms))
+
+        //update based on dropdown
+        d3.selectAll(".dropdown").on("change",async function(){
+            selected=d3.select(this).property("value")
+            
+            filterName=d3.select(this).property("id")
+            
+            boxFilters[filterName]=selected
+            
+            updateBox("#bench-svg","powerlifting_benchData.csv")
+            await wait(1000)
+            updateBox("#squat-svg","powerlifting_squatData.csv")
+            await wait(1000)
+            updateBox("#deadlift-svg","powerlifting_deadliftData.csv")
+            await wait(1000)
+            updateBox("#total-svg","powerlifting_totalData.csv")
+            await wait(1000)
+            updateBox("#wilks-svg","powerlifting_wilksData.csv")
+            await wait(1000)
+        })
+
+        
+
+        // mark user entries on boxplot
+        d3.selectAll(".entries").on("change",async function(){
+            id=d3.select(this).property("id");
+            val=d3.select(this).property("value");
+            entry=id.slice(0,id.length-6);
+            entries[entry]=val;
+            updateBox("#"+entry+"-svg","powerlifting_"+entry+"Data.csv");
+            if(entries.bench>0 && entries.deadlift>0 && entries.squat>0){
+                
+                entries.total=entries.bench*1+entries.deadlift*1+entries.squat*1
+                await wait(750)
+                updateBox("#total-svg","powerlifting_totalData.csv")
+                d3.select("#total-entry").attr("value",entries.total);
+            }
+            
+        });
+
+        
+
+
+    </script>
+</body>
+
+</html>
