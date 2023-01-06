@@ -12,11 +12,15 @@
   }
 
   circle {
-    fill-opacity: 0.6;
+    fill-opacity: 0.3;
   }
 
   circle:hover {
     fill-opacity: 1;
+  }
+
+  #bench-value, #squat-value, #deadlift-value, #total-value, #wilks-value {
+    fill-opacity: 0.6;
   }
 
   main {
