@@ -580,6 +580,8 @@ function drawBox(svgID, data_source, label) {
       .attr("cy", center)
       .attr("r", 0)
       .attr("fill", "orange")
+      .on("mouseover", function(){d3.select(this).style("fill-opacity", 1);})
+      .on("mouseout", function(){d3.select(this).style("fill-opacity", 0.8);})
       .append("title");
   });
 }
