@@ -427,7 +427,6 @@ const sexOptions = [
   { value: "all", text: "All" },
   { value: "M", text: "Male" },
   { value: "F", text: "Female" },
-  { value: "Mx", text: "Undisclosed" },
 ];
 // Initialize sex dropdown
 var sexSelector = d3.select("#sex");
@@ -562,7 +561,7 @@ function drawBox(svgID, data_source, label) {
     svg
       .append("text")
       .classed("minText", true)
-      .attr("x", offset - 20)
+      .attr("x", offset - 28)
       .attr("y", center + 5)
       .text(Math.round(min))
       .style("fill", "white");
@@ -671,7 +670,7 @@ function updateBox(svgID, data_source) {
     // Update Min and max text
     svg
       .selectAll(".minText")
-      .attr("x", offset - 20)
+      .attr("x", offset - 28)
       .attr("y", center + 5)
       .text(Math.round(min))
       .style("fill", "white");
