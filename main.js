@@ -579,7 +579,8 @@ function drawBox(svgID, data_source, label) {
       .attr("cx", statScale(1))
       .attr("cy", center)
       .attr("r", 0)
-      .attr("fill", "orange");
+      .attr("fill", "orange")
+      .append("title");
   });
 }
 drawBox("#bench-svg", "powerlifting_benchData.csv", "Bench(Kg)");
@@ -682,19 +683,21 @@ function updateBox(svgID, data_source) {
       .style("fill", "white");
 
     entry = entries[stat];
-
+    circle=svg.selectAll("circle")
     if (entry > 0) {
       var color = "orange";
       if (entry < min) color = "red";
       else if (entry > max) color = "green";
-      svg
-        .select(svgID.slice(0, svgID.length - 4) + "-value")
+      percentile=parseFloat(d3.bisect(values,entry)/values.length*100).toFixed(3)
+      circle
         .transition()
         .duration(200)
         .attr("cx", statScale(Math.max(min, Math.min(entry, max))))
         .attr("cy", center)
         .attr("r", 5)
-        .attr("fill", color);
+        .attr("fill", color)
+        .select("title").text(stat==="wilks"?"Your "+stat+" score is higher than "+percentile+"% of the population":
+                    "Your "+stat+" PR is higher than "+percentile+"% of the population");
     }
   });
 }
