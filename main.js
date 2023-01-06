@@ -446,7 +446,7 @@ sexSelector
 const equipmentOptions = [
   { value: "all", text: "Any" },
   { value: "Raw", text: "Raw" },
-  { value: "Wraps", text: "Wraps" },
+  { value: "Assisted", text: "Assisted" },
 ];
 // Initialize equipment dropdown
 var equipmentSelector = d3.select("#equipment");
@@ -621,10 +621,11 @@ function updateBox(svgID, data_source) {
         return d["Sex"] === boxFilters.sex;
       });
     }
-    if (boxFilters.equipment !== "all") {
-      values = values.filter(function (d) {
-        return d["Equipment"] === boxFilters.equipment;
-      });
+    if(boxFilters.equipment==="Raw"){
+      values=values.filter(function(d){return d['Equipment']==="Raw";})
+    }
+    else if(boxFilters.equipment==="Assisted"){
+      values=values.filter(function(d){return d['Equipment']!=="Raw";})
     }
 
     values = values.map(function (d) {
@@ -732,12 +733,12 @@ d3.selectAll(".entries").on("change", async function () {
   entry = id.slice(0, id.length - 6);
   entries[entry] = val;
   updateBox("#" + entry + "-svg", "powerlifting_" + entry + "Data.csv");
-  if (entries.bench > 0 && entries.deadlift > 0 && entries.squat > 0) {
+  if (entry!=="total" && entries.bench > 0 && entries.deadlift > 0 && entries.squat > 0) {
     entries.total =
       entries.bench * 1 + entries.deadlift * 1 + entries.squat * 1;
     await wait(750);
     updateBox("#total-svg", "powerlifting_totalData.csv");
-    d3.select("#total-entry").attr("value", entries.total);
+    d3.select("#total-entry").property("value",entries.total);
   }
 });
 
