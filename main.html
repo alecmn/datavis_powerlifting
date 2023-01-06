@@ -1,47 +1,142 @@
-<html>
-    <head>
-        <meta charset="utf-8">
-        <link href="/d3-geomap/dist/d3-geomap.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="d3-geomap" id="map"></div>
-    </body>
-    <script src="https://unpkg.com/topojson@3/dist/topojson.min.js"></script>
-    <script src="/d3-geomap/dist/d3-geomap.min.js"></script>
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
-    <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
-    
-    <script src="main.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Scatter</title>
+  <meta name="description" content="Scatter" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/d3-geomap/dist/d3-geomap.css" rel="stylesheet">
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+  <!-- <script src="../web_modules/d3/dist/d3.js"></script> -->
+  <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+  <script src="https://unpkg.com/topojson@3/dist/topojson.min.js"></script>
+  <script src="/d3-geomap/dist/d3-geomap.min.js"></script>
+  <link href="main.css" rel="stylesheet"></link>
 
-    <div>
-        <select id="worlddata-class">
-          <option value="count" selected>Count</option>
-          <option value="squat_mean">Avg Squat</option>
-          <option value="bench_mean">Avg Bench</option>
-          <option value="deadlift_mean">Avg Deadlift</option>
-          <option value="squat_max">Max Squat</option>
-          <option value="bench_max">Max Bench</option>
-          <option value="deadlift_max">Max Deadlift</option>
+</head>
+
+<body>
+
+
+<main>
+  <div id="main">
+    <div id="scatter-data">
+      <div id="scatter-header">
+        <h1>Dutch Powerlifter Performance View</h1>
+      </div>
+      <div id="lift-selection">
+        <label for="lifts-to-display"><strong>Select 2 lifts to inspect:</strong></label>
+        <select id="lifts-to-display">
+          <option value="SB">Squat, Bench</option>
+          <option value="DB">Deadlift, Bench</option>
+          <option value="DS">Deadlift, Squat</option>
         </select>
+      </div>
+      <section id="prs">
+        <h3>Lifter PR</h3>
+        <svg id="lifter"></svg>
+      </section>
+      <section id="results">
+        <h3>Competition Results</h3>
+        <svg id="comp"></svg>
+      </section>
+      <section id="lookup">
+        <br><br>
+        <br><br>
+        <label><strong>Lifter Name:</strong></label>
+        <br><br>
+        <input id='lifter_name' type="text" name="name" value="" size="12">
+        <br><br>
+      </section>
+    </div>
+    <div id="stats-data">
+      <div id="stats-header">
+        <h1>Stats Comparison</h1>
+      </div>
+      
+      <div id="stats-selection">
+          <label for="division" ><strong>Weight class(kg):</strong></label>
+          <select id="division" class="dropdown">
+          
+          </select>
+          <label for="sex"><strong>Sex:</strong></label>
+          <select id="sex" class="dropdown">
+          </select>
+          <label for="equipment"><strong>Equipment:</strong></label>
+          <select id="equipment" class="dropdown">
+          </select>
+      </div>
+
+      <div class="outer">
+          <table cellspacing="0">
+              <tr>
+                  <th></th>
+                  <th>Enter your PRs</th>
+              </tr>
+              <tr>
+              <td>
+                  <svg id="bench-svg" ></svg>
+              </td>
+              <td>
+                  <input class="entries" type="number" id="bench-entry" value="" style="width: 100px;">
+              </td>
+              </tr>
+              <tr>
+                  <td>
+                      <svg id="squat-svg" ></svg>
+                  </td>
+                  <td>
+                      <input class="entries" type="number" id="squat-entry" value="" style="width: 100px;">
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <svg id="deadlift-svg" ></svg>
+                  </td>
+                  <td>
+                      <input class="entries" type="number" id="deadlift-entry" value="" style="width: 100px;">
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <svg id="total-svg" ></svg>
+                  </td>
+                  <td>
+                      <input class="entries" type="number" id="total-entry" value="" style="width: 100px;">
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <svg id="wilks-svg" ></svg>
+                  </td>
+                  <td>
+                      <input class="entries" type="number" id="wilks-entry" value="" style="width: 100px;">
+                  </td>
+              </tr>
+          </table> 
+      </div>
     </div>
 
-    <main>
-        <section>
-            <h3>Lifter PR</h3>
-            <svg id="lifter"></svg>
-          </section>
-          <section>
-            <h3>Competition Results</h3>
-            <svg id="comp"></svg>
-          </section>
-          <section>
-            <br><br>
-            <br><br>
-            <label><strong>Lifter Name:</strong></label>
-            <br><br>
-            <input id='lifter_name' type="text" name="name" value="" size="12">
-            <br><br>
-        </section>
-        <svg id="map"></svg>
-    </main>
+    <div id="world-data">
+      <div id="world-select">
+        <h1 id="world-title">Powerlifting World Data</h1>
+        <select id="world-class">
+          <option value="Lifters" selected>Lifters</option>
+          <option value="Avg_Squat">Avg Squat</option>
+          <option value="Avg_Bench">Avg Bench</option>
+          <option value="Avg_Deadlift">Avg Deadlift</option>
+          <option value="Max_Squat">Max Squat</option>
+          <option value="Max_Bench">Max Bench</option>
+          <option value="Max_Deadlift">Max Deadlift</option>
+        </select>
+      </div>
+      <svg id="map" class="d3-geomap"></svg>
+    </div>
+  </div>
+</main>
+
+
+<script src="main.js"></script>
+</body>
 </html>

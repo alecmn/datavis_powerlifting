@@ -1,6 +1,6 @@
 const state = {
   data: [],
-  worldDataClass: "bench_max",
+  worldDataClass: "Lifters",
   data_comp: [],
   data_lifter: [],
   data_lifter_selected: [],
@@ -55,7 +55,8 @@ function createScatter(svgId) {
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("transform", "translate(490,290) scale(0.6)")
-    .text("squat");
+    .text("squat")
+    .style("fill", "white");
 
   const yLabel = svg
     .append("text")
@@ -64,7 +65,8 @@ function createScatter(svgId) {
     .attr("y", 15) // once rotated 90 degree, x coordinate becomes y?
     .attr("dy", "1.2em")
     .attr("transform", "rotate(-90) scale(0.6)")
-    .text("bench");
+    .text("bench")
+    .style("fill", "white");
 
   function update(new_data) {
     // console.log(new_data);
@@ -152,7 +154,7 @@ function createScatter(svgId) {
             .attr("cx", 0)
             .attr("cy", 0)
             .attr("r", 0)
-            .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange"));
+            .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange"));
           circle_enter.append("title");
           return circle_enter;
         },
@@ -165,7 +167,7 @@ function createScatter(svgId) {
       );
 
     circle
-      .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange"))
+      .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange"))
       .transition()
       .duration(duration)
       .attr("cx", (d) => xScale(d[lift1])) // turn domain value into position on axis
@@ -226,12 +228,12 @@ d3.csv("powerlifting_SBD.csv").then((parsed1) => {
             .transition()
             .duration(duration)
             .attr("r", 6)
-            .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange"));
+            .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange"));
           circles_comp
             .transition()
             .duration(duration)
             .attr("r", 6)
-            .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange"));
+            .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange"));
           return;
         }
         circles_lifter
@@ -242,13 +244,13 @@ d3.csv("powerlifting_SBD.csv").then((parsed1) => {
           )
           .attr("fill", (d) =>
             d["Name"].toLowerCase().includes(selected.toLowerCase())
-              ? "red"
+              ? "white"
               : d["Sex"] === "M"
-              ? "steelblue"
+              ? "red"
               : "orange"
           );
         circles_comp
-          .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange"))
+          .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange"))
           .transition()
           .duration(duration)
           .attr("r", (d) =>
@@ -256,9 +258,9 @@ d3.csv("powerlifting_SBD.csv").then((parsed1) => {
           )
           .attr("fill", (d) =>
             d["Name"].toLowerCase().includes(selected.toLowerCase())
-              ? "red"
+              ? "white"
               : d["Sex"] === "M"
-              ? "steelblue"
+              ? "red"
               : "orange"
           );
       });
@@ -375,7 +377,7 @@ d3.csv("powerlifting_SBD.csv").then((parsed1) => {
         .attr("r", 6);
 
       circles_comp
-        .attr("fill", (d) => (d["Sex"] === "M" ? "steelblue" : "orange")) // not sure why color is broken.
+        .attr("fill", (d) => (d["Sex"] === "M" ? "red" : "orange")) // not sure why color is broken.
         .transition()
         .duration(duration)
         .attr("cx", (d) => xScales[0](d[lift1])) // turn domain value into position on axis
@@ -385,49 +387,399 @@ d3.csv("powerlifting_SBD.csv").then((parsed1) => {
   });
 });
 
-// function createMap() {
-//   const margin = {
-//     top: 10,
-//     bottom: 10,
-//     left: 10,
-//     right: 10,
-//   };
-//   const width = 800 - margin.left - margin.right;
-//   const height = 600 - margin.top - margin.bottom;
+const w2 = 420;
+const plotlen = 230;
+const h2 = 50;
+const offset = 120;
+const weightClassOptions = [
+  { value: "all", text: "All Classes" },
+  { value: "-44", text: "Under 44" },
+  { value: "-48", text: "Under 48" },
+  { value: "-52", text: "Under 52" },
+  { value: "-56", text: "Under 56" },
+  { value: "-60", text: "Under 60" },
+  { value: "-67.5", text: "Under 67.5" },
+  { value: "-75", text: "Under 75" },
+  { value: "-82.5", text: "Under 82.5" },
+  { value: "-90", text: "Under 90" },
+  { value: "-100", text: "Under 100" },
+  { value: "-110", text: "Under 110" },
+  { value: "-125", text: "Under 125" },
+  { value: "-140", text: "Under 140" },
+  { value: "140+", text: "Over 140" },
+];
+// Initialize weight class dropdown
+var weightClassSelector = d3.select("#division");
+weightClassSelector
+  .selectAll(".options")
+  .data(weightClassOptions)
+  .enter()
+  .append("option")
+  .attr("class", "options")
+  .attr("value", function (d) {
+    return d.value;
+  })
+  .text(function (d) {
+    return d.text;
+  });
 
-//   const columnName = state.worldDataClass;
+const sexOptions = [
+  { value: "all", text: "All" },
+  { value: "M", text: "Male" },
+  { value: "F", text: "Female" },
+  { value: "Mx", text: "Undisclosed" },
+];
+// Initialize sex dropdown
+var sexSelector = d3.select("#sex");
+sexSelector
+  .selectAll(".options")
+  .data(sexOptions)
+  .enter()
+  .append("option")
+  .attr("class", "options")
+  .attr("value", function (d) {
+    return d.value;
+  })
+  .text(function (d) {
+    return d.text;
+  });
 
-//   // Creates sources <svg> element and inner g (for margins)
-//   const svg = d3
-//     .select("map")
-//     .attr("width", width + margin.left + margin.right)
-//     .attr("height", height + margin.top + margin.bottom)
-//     .append("g")
-//     .attr("transform", `translate(${margin.left}, ${margin.top})`);
+const equipmentOptions = [
+  { value: "all", text: "Any" },
+  { value: "Raw", text: "Raw" },
+  { value: "Wraps", text: "Wraps" },
+];
+// Initialize equipment dropdown
+var equipmentSelector = d3.select("#equipment");
+equipmentSelector
+  .selectAll(".options")
+  .data(equipmentOptions)
+  .enter()
+  .append("option")
+  .attr("class", "options")
+  .attr("value", function (d) {
+    return d.value;
+  })
+  .text(function (d) {
+    return d.text;
+  });
 
-//   var map = d3
-//     .choropleth()
-//     .geofile("/d3-geomap/dist/topojson/world/countries.json")
-//     .colors(d3.schemeReds[9])
-//     .column(columnName)
-//     .legend(false)
-//     .unitId("iso3");
+// Helper function to get key
+function getKey(type) {
+  if (type === "bench") return "Best3BenchKg";
+  else if (type === "squat") return "Best3SquatKg";
+  else if (type === "deadlift") return "Best3DeadliftKg";
+  else if (type === "total") return "TotalKg";
+  else return "Wilks";
+}
 
-//   d3.csv("countries.csv").then((data) => {
-//     var selection = d3.select("#map").datum(data);
-//     map.draw(selection);
-//   });
-// }
+function drawBox(svgID, data_source, label) {
+  var svg = d3.select(svgID).attr("width", w2).attr("height", h2).append("g");
 
-// const map = createMap();
+  d3.csv(data_source).then((data) => {
+    // console.log(data);
 
-// //interactivity
-// d3.select("#worlddata-class").on("change", function () {
-//   console.log("Change");
-//   const selected = d3.select(this).property("value");
-//   state.worldDataClass = selected;
-//   createMap();
-// });
+    stat = svgID.slice(1, svgID.length - 4);
+    key = getKey(stat);
+
+    let values = data;
+
+    values = values.map(function (d) {
+      return +d[key];
+    });
+
+    var sorted = values.sort(d3.ascending);
+    var statScale = d3
+      .scaleLinear()
+      .domain([sorted[0], sorted[sorted.length - 1]])
+      .range([offset, offset + plotlen]);
+    var q1 = d3.quantile(sorted, 0.25);
+    var med = d3.quantile(sorted, 0.5);
+    var q3 = d3.quantile(sorted, 0.75);
+    var min = sorted[0];
+    var max = sorted[sorted.length - 1];
+
+    var center = 30;
+    var width = 30;
+
+    // Central line
+    svg
+      .append("line")
+      .attr("x1", offset)
+      .attr("x2", plotlen + offset)
+      .attr("y1", center)
+      .attr("y2", center)
+      .attr("stroke", "white");
+
+    // Whiskers
+    svg
+      .append("line")
+      .attr("x1", offset)
+      .attr("x2", offset)
+      .attr("y1", center + 10)
+      .attr("y2", center - 10)
+      .attr("stroke", "white");
+    svg
+      .append("line")
+      .attr("x1", plotlen + offset)
+      .attr("x2", plotlen + offset)
+      .attr("y1", center + 10)
+      .attr("y2", center - 10)
+      .attr("stroke", "white");
+
+    // Label
+    svg
+      .append("text")
+      .classed("plotStat", true)
+      .attr("x", 0)
+      .attr("y", center + 5)
+      .text(label)
+      .style("fill", "white");
+
+    // Box
+    svg
+      .append("rect")
+      .classed("bPlot", true)
+      .attr("x", statScale(q1))
+      .attr("y", center - width / 2)
+      .attr("height", width)
+      .attr("width", statScale(q3) - statScale(q1))
+      .attr("stroke", "white")
+      .attr("fill", "#bf262b")
+      .attr("fill-opacity", 1);
+
+    // median line
+    svg
+      .append("line")
+      .classed("medianLine", true)
+      .attr("x1", statScale(med))
+      .attr("x2", statScale(med))
+      .attr("y1", center + width / 2)
+      .attr("y2", center - width / 2)
+      .attr("stroke", "white");
+
+    // Min and max text
+    svg
+      .append("text")
+      .classed("minText", true)
+      .attr("x", offset - 20)
+      .attr("y", center + 5)
+      .text(Math.round(min))
+      .style("fill", "white");
+    svg
+      .append("text")
+      .classed("maxText", true)
+      .attr("x", plotlen + offset + 5)
+      .attr("y", center + 5)
+      .text(max)
+      .style("fill", "white");
+
+    svg
+      .append("circle")
+      .attr("id", stat + "-value")
+      .attr("cx", statScale(1))
+      .attr("cy", center)
+      .attr("r", 0)
+      .attr("fill", "orange");
+  });
+}
+drawBox("#bench-svg", "powerlifting_benchData.csv", "Bench(Kg)");
+drawBox("#squat-svg", "powerlifting_squatData.csv", "Squat(Kg)");
+drawBox("#deadlift-svg", "powerlifting_deadliftData.csv", "Deadlift(Kg)");
+drawBox("#total-svg", "powerlifting_totalData.csv", "Total(Kg)");
+drawBox("#wilks-svg", "powerlifting_wilksData.csv", "Wilks");
+
+const boxFilters = {
+  division: "all",
+  sex: "all",
+  equipment: "all",
+};
+// Initialize user entries
+const entries = {
+  bench: -1,
+  squat: -1,
+  deadlift: -1,
+  total: -1,
+  wilks: -1,
+};
+
+// Update boxplot after filtering
+function updateBox(svgID, data_source) {
+  var svg = d3.select(svgID);
+
+  d3.csv(data_source).then((data) => {
+    let values = data;
+    stat = svgID.slice(1, svgID.length - 4);
+    key = getKey(stat);
+    if (boxFilters.division !== "all") {
+      values = values.filter(function (d) {
+        return d["division"] === boxFilters.division;
+      });
+    }
+    if (boxFilters.sex !== "all") {
+      values = values.filter(function (d) {
+        return d["Sex"] === boxFilters.sex;
+      });
+    }
+    if (boxFilters.equipment !== "all") {
+      values = values.filter(function (d) {
+        return d["Equipment"] === boxFilters.equipment;
+      });
+    }
+
+    values = values.map(function (d) {
+      return +d[key];
+    });
+
+    //console.log(values)
+    var sorted = values.sort(d3.ascending);
+    var statScale = d3
+      .scaleLinear()
+      .domain([sorted[0], sorted[sorted.length - 1]])
+      .range([offset, plotlen + offset]);
+    var q1 = d3.quantile(sorted, 0.25);
+    var med = d3.quantile(sorted, 0.5);
+    var q3 = d3.quantile(sorted, 0.75);
+    var min = sorted[0];
+    var max = sorted[sorted.length - 1];
+
+    var center = 30;
+    var width = 30;
+
+    //Update box
+    svg
+      .selectAll(".bPlot")
+      .transition()
+      .duration(500)
+      .attr("x", statScale(q1))
+      .attr("y", center - width / 2)
+      .attr("height", width)
+      .attr("width", statScale(q3) - statScale(q1))
+      .attr("stroke", "white");
+
+    // Update median line
+    svg
+      .selectAll(".medianLine")
+      .transition()
+      .duration(500)
+      .attr("x1", statScale(med))
+      .attr("x2", statScale(med))
+      .attr("y1", center + width / 2)
+      .attr("y2", center - width / 2)
+      .attr("stroke", "white");
+
+    // Update Min and max text
+    svg
+      .selectAll(".minText")
+      .attr("x", offset - 20)
+      .attr("y", center + 5)
+      .text(Math.round(min))
+      .style("fill", "white");
+    svg
+      .selectAll(".maxText")
+      .attr("x", plotlen + offset + 5)
+      .attr("y", center + 5)
+      .text(max)
+      .style("fill", "white");
+
+    entry = entries[stat];
+
+    if (entry > 0) {
+      var color = "orange";
+      if (entry < min) color = "red";
+      else if (entry > max) color = "green";
+      svg
+        .select(svgID.slice(0, svgID.length - 4) + "-value")
+        .transition()
+        .duration(500)
+        .attr("cx", statScale(Math.max(min, Math.min(entry, max))))
+        .attr("cy", center)
+        .attr("r", 5)
+        .attr("fill", color);
+    }
+  });
+}
+
+//define wait function
+var wait = (ms) => new Promise((r, j) => setTimeout(r, ms));
+
+//update based on dropdown
+d3.selectAll(".dropdown").on("change", async function () {
+  selected = d3.select(this).property("value");
+
+  filterName = d3.select(this).property("id");
+
+  boxFilters[filterName] = selected;
+
+  updateBox("#bench-svg", "powerlifting_benchData.csv");
+  await wait(1000);
+  updateBox("#squat-svg", "powerlifting_squatData.csv");
+  await wait(1000);
+  updateBox("#deadlift-svg", "powerlifting_deadliftData.csv");
+  await wait(1000);
+  updateBox("#total-svg", "powerlifting_totalData.csv");
+  await wait(1000);
+  updateBox("#wilks-svg", "powerlifting_wilksData.csv");
+  await wait(1000);
+});
+
+// mark user entries on boxplot
+d3.selectAll(".entries").on("change", async function () {
+  id = d3.select(this).property("id");
+  val = d3.select(this).property("value");
+  entry = id.slice(0, id.length - 6);
+  entries[entry] = val;
+  updateBox("#" + entry + "-svg", "powerlifting_" + entry + "Data.csv");
+  if (entries.bench > 0 && entries.deadlift > 0 && entries.squat > 0) {
+    entries.total =
+      entries.bench * 1 + entries.deadlift * 1 + entries.squat * 1;
+    await wait(750);
+    updateBox("#total-svg", "powerlifting_totalData.csv");
+    d3.select("#total-entry").attr("value", entries.total);
+  }
+});
+
+function createMap() {
+  const margin = {
+    top: 10,
+    bottom: 10,
+    left: 10,
+    right: 10,
+  };
+  const width = 1140 - margin.left - margin.right;
+  const height = 600 - margin.top - margin.bottom;
+
+  const columnName = state.worldDataClass;
+
+  d3.select("#map").selectAll("*").remove();
+
+  var map = d3
+    .choropleth()
+    .geofile("/d3-geomap/dist/topojson/world/countries.json")
+    .colors(d3.schemeReds[9])
+    .column(columnName)
+    .legend(true)
+    .unitId("iso3");
+
+  d3.csv("countries.csv").then((data) => {
+    var selection = d3
+      .select("#map")
+      .datum(data)
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom);
+    map.draw(selection);
+  });
+}
+
+const map = createMap();
+
+//interactivity
+d3.select("#world-class").on("change", function () {
+  console.log("Change");
+  const selected = d3.select(this).property("value");
+  state.worldDataClass = selected;
+  createMap();
+});
 
 // interactivity
 d3.select("#lifts-to-display").on("change", function () {
