@@ -12,7 +12,7 @@ const w = 500;
 const h = 300;
 const padding = 40;
 
-duration = 1500;
+duration = 500;
 
 // 2 lifts out of 3 to display
 let lift1;
@@ -650,7 +650,7 @@ function updateBox(svgID, data_source) {
     svg
       .selectAll(".bPlot")
       .transition()
-      .duration(500)
+      .duration(200)
       .attr("x", statScale(q1))
       .attr("y", center - width / 2)
       .attr("height", width)
@@ -661,7 +661,7 @@ function updateBox(svgID, data_source) {
     svg
       .selectAll(".medianLine")
       .transition()
-      .duration(500)
+      .duration(200)
       .attr("x1", statScale(med))
       .attr("x2", statScale(med))
       .attr("y1", center + width / 2)
@@ -691,7 +691,7 @@ function updateBox(svgID, data_source) {
       svg
         .select(svgID.slice(0, svgID.length - 4) + "-value")
         .transition()
-        .duration(500)
+        .duration(200)
         .attr("cx", statScale(Math.max(min, Math.min(entry, max))))
         .attr("cy", center)
         .attr("r", 5)
